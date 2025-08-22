@@ -376,11 +376,11 @@ class Ideafinder:
                         with open(results_filename, "wb") as f:
                             f.write(content_response.content)
                         print(f"{GREEN}Results downloaded to {results_filename}{RESET}")
+                        self.cleanResults(results_filename)
                         return results_filename
                     else:
                         print(f"{RED}Error downloading file content: {content_response.status_code} - {content_response.text}{RESET}")
                         return
-                    self.cleanResults(results_filename)
                 elif status == "failed" or status == "cancelled":
                     print(f"{RED}Batch processing {status}!{RESET}")
                     return
