@@ -2,8 +2,8 @@
 Proof of concept: Scraper in combination with AI to find and score ideas from reddit.
 
 ## Table of contents
-[How to install and start](#how-to-install-and-start)
-[How it works under the hood](#how-it-works-under-the-hood)
+- [How to install and start](#how-to-install-and-start)
+- [How it works under the hood](#how-it-works-under-the-hood)
 
 ### How to install and start
 1. Create and start the virtual env with
