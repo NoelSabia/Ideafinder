@@ -24,6 +24,11 @@ class Ideafinder:
         self.jsonl_name = ""
     
     def getAnkers(self) -> list:
+        """
+        This functions get <a> from the reddit site for the posts
+
+        :return: list of <a>
+        """
         self.driver.get(self.url_to_scrape)
         hrefs = set()
         last_height = self.driver.execute_script("return document.body.scrollHeight")
@@ -44,7 +49,12 @@ class Ideafinder:
         return hrefs_list
     
     def summarizePost(self, post_content: str) -> str:
-        """Summarize post content using OpenAI API"""
+        """
+        Summarize post content using OpenAI API
+
+        :param p1: the hole post as a string
+        :return: shortened post as a string
+        """
         try:
             api_key = os.getenv("OPENAI_API_KEY")
             if not api_key:
@@ -80,6 +90,11 @@ class Ideafinder:
             return post_content
     
     def createJsonL(self, ankerlist: list) -> None:
+        """
+        Creates a JSONL file
+
+        :param p1: list of <a>
+        """
         filename = datetime.now().strftime("batch_%Y-%m-%d_%H-%M-%S.jsonl")
         self.jsonl_name = filename
         print(f"{GREEN}Saving comments to {filename}{RESET}")
@@ -145,6 +160,9 @@ class Ideafinder:
                     continue
 
     def sendBatchApiRequest(self) -> None:
+        """
+        Sends all the requests as batches to make it 50% cheaper
+        """
         if not self.jsonl_name:
             print(f"{RED}No batch file name available.{RESET}")
             return
@@ -214,13 +232,92 @@ class Ideafinder:
         except Exception as e:
             print(f"{RED}Error sending batch request: {e}{RESET}")
     
-    def cleanResults(self, results_filename) -> None:
+    def cleanResults(self, results_filename=None) -> None:
+        """
+        Process batch results, filtering for scores >= 80 and extracting key information.
+
+        :param p1: filename where the raw results are returned as jsonl
+        """
+        
+        # If no results_filename provided, ask user to provide it
+        if not results_filename:
+            results_filename = input(f"\n{YELLOW}Enter the results JSONL filename to process: {RESET}")
+        
+        if not os.path.exists(results_filename):
+            print(f"{RED}File {results_filename} not found.{RESET}")
+            return
+        
+        print(f"\n{YELLOW}Processing batch results from {results_filename}...{RESET}")
+        
+        high_potential_ideas = []
+        
+        try:
+            # Read and process each line in the results file
+            with open(results_filename, 'r', encoding='utf-8') as file:
+                line_count = 0
+                high_score_count = 0
+                
+                for line in file:
+                    line_count += 1
+                    try:
+                        # Parse the JSONL line
+                        result = json.loads(line)
+                        
+                        # Extract the assistant's content from the response
+                        if 'response' in result and 'body' in result['response']:
+                            content = result['response']['body']['choices'][0]['message']['content']
+                            
+                            # Parse the formatted response (PROBLEM=X|SCORE=Y|REASON=Z)
+                            parts = content.split('|')
+                            if len(parts) == 3:
+                                problem_part = parts[0].strip()
+                                score_part = parts[1].strip()
+                                reason_part = parts[2].strip()
+                                
+                                # Extract the score
+                                score = 0
+                                if score_part.startswith('SCORE='):
+                                    try:
+                                        score = int(score_part[6:])
+                                    except ValueError:
+                                        print(f"{YELLOW}Invalid score format in line {line_count}{RESET}")
+                                
+                                if score >= 80:
+                                    high_score_count += 1
+                                    problem = problem_part[8:] if problem_part.startswith('PROBLEM=') else problem_part
+                                    reason = reason_part[7:] if reason_part.startswith('REASON=') else reason_part
+                                    high_potential_ideas.append({
+                                        "problem": problem,
+                                        "score": score,
+                                        "reason": reason,
+                                        "custom_id": result.get("custom_id", "")
+                                    })
+                    
+                    except json.JSONDecodeError:
+                        print(f"{YELLOW}Invalid JSON in line {line_count}{RESET}")
+                    except Exception as e:
+                        print(f"{YELLOW}Error processing line {line_count}: {e}{RESET}")
+            
+            if high_potential_ideas:
+                output_filename = f"high_potential_ideas_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.json"
+                with open(output_filename, 'w', encoding='utf-8') as outfile:
+                    json.dump(high_potential_ideas, outfile, indent=2)
+                
+                print(f"\n{GREEN}Found {high_score_count} high-scoring ideas (score >= 80) out of {line_count} total.{RESET}")
+                print(f"{GREEN}Filtered results saved to {output_filename}{RESET}")
+            else:
+                print(f"\n{YELLOW}No high-scoring ideas (score >= 80) found in {line_count} results.{RESET}")
+        
+        except Exception as e:
+            print(f"{RED}Error processing results file: {e}{RESET}")
 
     
-    def retrieveBatchResults(self, batch_id=None):
-        import time
-        
-        # If no batch_id provided, try to load from file
+    def retrieveBatchResults(self, batch_id=None) -> None:
+        """
+        Fetches the results from the finished batch
+
+        :param p1: batch id
+        """
         if not batch_id:
             try:
                 with open("batch_id.txt", "r") as f:
@@ -297,6 +394,9 @@ class Ideafinder:
         print(f"curl https://api.openai.com/v1/batches/{batch_id} -H \"Authorization: Bearer $OPENAI_API_KEY\" -H \"OpenAI-Beta: batch/v1\"")
     
     def orchastrateIdeafinder(self) -> None:
+        """
+        This function is just to organize
+        """
         print(f"\n{YELLOW}Scraping Ankers.{RESET}")
         ankerlist = self.getAnkers()
         print(f"\n{YELLOW}Creating JsonL with Comments{RESET}")
@@ -330,9 +430,6 @@ def main():
             case 2:
                 finder = Ideafinder("", "", "", False)
                 finder.retrieveBatchResults()
-            case 3:
-                finder = Ideafinder("", "", "", False)
-                finder.cleanResults()
             case _:
                 print(f"\n{RED}Invalid input! Program stopped.{RESET}\n")
     except Exception as e:
