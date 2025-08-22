@@ -6,17 +6,18 @@ Proof of concept: Scraper in combination with AI to find and score ideas from re
 [How it works under the hood](#how-it-works-under-the-hood)
 
 ### How to install and start
-1. Start the virtual env with
+1. Create and start the virtual env with
 ```bash
+    python3 -m venv ./.venv &&\
     source ./.venv/bin/active
 ```
 2. Install the requirements with
 ```bash
-    pip install requirements.txt
+    pip install -r requirements.txt
 ```
 3. Create a .env and put your API KEY in there
 ```bash
-    touch .env
+    touch .env &&\
     echo "OPENAI_API_KEY='<YOUR_API_KEY>'" > .env
 ```
 4. Start program with
