@@ -96,9 +96,13 @@ class Ideafinder:
         :param p1: list of <a>
         """
         filename = datetime.now().strftime("batch_%Y-%m-%d_%H-%M-%S.jsonl")
+        batchlink_filename = datetime.now().strftime("batchlink_%Y-%m-%d_%H-%M-%S.jsonl")
+        
         self.jsonl_name = filename
         print(f"{GREEN}Saving comments to {filename}{RESET}")
-        with open(filename, "w", encoding="utf-8") as f:
+        print(f"{GREEN}Saving batch links to {batchlink_filename}{RESET}")
+        
+        with open(filename, "w", encoding="utf-8") as f, open(batchlink_filename, "w", encoding="utf-8") as link_f:
             custom_id_counter = 1
             for idx, link in enumerate(ankerlist):
                 print(f"{GREEN}Current index at: [{idx+1}/{len(ankerlist)}]{RESET}")
@@ -137,6 +141,7 @@ class Ideafinder:
                                 "Use only the comment and the post for context. Output one problem the user has that a small paid app could solve, or NO_PROBLEM. Then a numeric score 0–100 and one short reason. Format: PROBLEM=<...>|SCORE=<n>|REASON=<...>"
                             )
                             
+                            # Write API request to batch file
                             json_obj = {
                                 "custom_id": f"request-{custom_id_counter}",
                                 "method": "POST",
@@ -151,6 +156,14 @@ class Ideafinder:
                                 }
                             }
                             f.write(json.dumps(json_obj) + "\n")
+                            
+                            # Write link mapping to batchlink file
+                            link_obj = {
+                                "custom_id": f"request-{custom_id_counter}",
+                                "link": link
+                            }
+                            link_f.write(json.dumps(link_obj) + "\n")
+                            
                             custom_id_counter += 1
                         except Exception as e:
                             print(f"{RED}Error extracting <p> from comment div: {e}{RESET}")
@@ -234,7 +247,7 @@ class Ideafinder:
     
     def cleanResults(self, results_filename=None) -> None:
         """
-        Process batch results, filtering for scores >= 80 and extracting key information.
+        Process batch results, filtering for scores >= 85 and extracting key information.
 
         :param p1: filename where the raw results are returned as jsonl
         """
@@ -282,7 +295,7 @@ class Ideafinder:
                                     except ValueError:
                                         print(f"{YELLOW}Invalid score format in line {line_count}{RESET}")
                                 
-                                if score >= 80:
+                                if score >= 85:
                                     high_score_count += 1
                                     problem = problem_part[8:] if problem_part.startswith('PROBLEM=') else problem_part
                                     reason = reason_part[7:] if reason_part.startswith('REASON=') else reason_part
@@ -303,10 +316,10 @@ class Ideafinder:
                 with open(output_filename, 'w', encoding='utf-8') as outfile:
                     json.dump(high_potential_ideas, outfile, indent=2)
                 
-                print(f"\n{GREEN}Found {high_score_count} high-scoring ideas (score >= 80) out of {line_count} total.{RESET}")
+                print(f"\n{GREEN}Found {high_score_count} high-scoring ideas (score >= 85) out of {line_count} total.{RESET}")
                 print(f"{GREEN}Filtered results saved to {output_filename}{RESET}")
             else:
-                print(f"\n{YELLOW}No high-scoring ideas (score >= 80) found in {line_count} results.{RESET}")
+                print(f"\n{YELLOW}No high-scoring ideas (score >= 85) found in {line_count} results.{RESET}")
         
         except Exception as e:
             print(f"{RED}Error processing results file: {e}{RESET}")
