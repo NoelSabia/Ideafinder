@@ -67,7 +67,7 @@ class Ideafinder:
             }
             
             payload = {
-                "model": "gpt-4o-mini",
+                "model": "gpt-4.1-mini",
                 "messages": [
                     {"role": "system", "content": "You are a helpful assistant that summarizes text as concisely as possible while retaining key information."},
                     {"role": "user", "content": f"Summarize this post in 2-3 sentences, focusing on the main topic and key points:\n\n{post_content}"}
@@ -138,7 +138,14 @@ class Ideafinder:
                             
                             combined_text = (
                                 f"POST:\n{post_content}\n\nCOMMENT:\n{comment_text}\n"
-                                "Use only the comment and the post for context. Output one problem the user has that a small paid app could solve, or NO_PROBLEM. Then a numeric score 0–100 and one short reason. Format: PROBLEM=<...>|SCORE=<n>|REASON=<...>"
+                                "TASK: Using only the comment, extract ONE specific, actionable problem that could be solved by a small paid software product.\n"
+                                "Then assign a clarity score (0–100) using these rules:\n"
+                                "+40 if the problem is clearly described and concrete\n"
+                                "+20 if the problem is frequent or recurring\n"
+                                "+20 if the problem has measurable pain (time, money, effort)\n"
+                                "+10 if the problem suggests a clear user (who has it)\n"
+                                "+10 if the problem is unique or not overly generic\n"
+                                "Output only in this format: PROBLEM=<...>|COMMENT=<...>|SCORE=<n>|REASON=<...>"
                             )
                             
                             # Write API request to batch file
@@ -147,7 +154,7 @@ class Ideafinder:
                                 "method": "POST",
                                 "url": "/v1/chat/completions",
                                 "body": {
-                                    "model": "gpt-4o-mini",
+                                    "model": "gpt-4.1-mini",
                                     "messages": [
                                         {"role": "system", "content": "You are an assistant to help me evaluate business ideas."},
                                         {"role": "user", "content": combined_text}
