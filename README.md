@@ -4,6 +4,7 @@ Proof of concept: Scraper in combination with AI to find and score ideas from re
 ## Table of contents
 - [How to install and start](#how-to-install-and-start)
 - [How it works under the hood](#how-it-works-under-the-hood)
+- [What to do after getting the results](#what-to-do-after-getting-the-results)
 
 ### How to install and start
 1. Create and start the virtual env with
@@ -30,3 +31,8 @@ This program uses a scraper (selenium) to get the top 100 posts (default) of a s
 It then sorts it in jsonl files to be ready as a batch for openais api.
 After that the batch will be finished in the next 24 hours and the answers returned.
 In the end the best 10 things will be returned in a nice structured file.
+
+
+## What to do after getting the results
+Copy and Paste into ChatGPT and write this prompt under the jsonl you just pasted:
+I have this jsonl that extracted the best ideas I could find. Please help me validate these ideas with this catalog of questions: What is the Mission, Who are potential customers and what are their benefits, Why would they pay me, Does smth like this already exist and who is the competition

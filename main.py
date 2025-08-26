@@ -137,15 +137,21 @@ class Ideafinder:
                             comment_text = p.text
                             
                             combined_text = (
-                                f"POST:\n{post_content}\n\nCOMMENT:\n{comment_text}\n"
-                                "TASK: Using only the comment, extract ONE specific, actionable problem that could be solved by a small paid software product.\n"
-                                "Then assign a clarity score (0–100) using these rules:\n"
-                                "+40 if the problem is clearly described and concrete\n"
-                                "+20 if the problem is frequent or recurring\n"
-                                "+20 if the problem has measurable pain (time, money, effort)\n"
-                                "+10 if the problem suggests a clear user (who has it)\n"
-                                "+10 if the problem is unique or not overly generic\n"
-                                "Output only in this format: PROBLEM=<...>|COMMENT=<...>|SCORE=<n>|REASON=<...>"
+                                f"POST:\n{post_content}\n\nCOMMENT:\n{comment_text}\n\n"
+                                "TASK: Evaluate the COMMENT only. Do not use the POST to invent problems or context.\n\n"
+                                "Step 1: Determine if the COMMENT describes a problem that can realistically be addressed by software (SaaS, automation tool, or app).  \n"
+                                "- Valid SaaS problems usually involve: tracking, monitoring, organizing, automating, analyzing, alerting, aggregating, verifying, communicating, or coordinating information or workflows.  \n"
+                                "- If the problem is purely about emotions, motivation, education, strategy, trust in people, or physical-world issues (e.g. suppliers cheating, lifestyle choices), it is NOT SaaS-solvable.  \n\n"
+                                "If the comment is irrelevant, vague, generic, off-topic, or describes a non-software-solvable issue, output:  \n"
+                                "PROBLEM=NONE|COMMENT=<comment_text>|SCORE=0|REASON=Comment is useless for SaaS.  \n\n"
+                                "Step 2: If the COMMENT does describe a SaaS-solvable problem, extract ONE clear and actionable problem and assign a score using these rules:  \n"
+                                "+40 if the comment describes a concrete and specific SaaS-solvable workflow problem.  \n"
+                                "+20 if the problem seems recurring or frequent for many users.  \n"
+                                "+20 if the problem implies measurable pain (time wasted, money lost, effort required).  \n"
+                                "+10 if the comment suggests a clear target user who has the problem.  \n"
+                                "+10 if the problem is unique or specific enough for a differentiated SaaS product.  \n\n"
+                                "Output only in this format:  \n"
+                                "PROBLEM=<...>|COMMENT=<...>|SCORE=<n>|REASON=<...>"
                             )
                             
                             # Write API request to batch file
@@ -255,8 +261,6 @@ class Ideafinder:
     def cleanResults(self, results_filename=None) -> None:
         """
         Process batch results, filtering for scores >= 85 and extracting key information.
-
-        :param p1: filename where the raw results are returned as jsonl
         """
         
         # If no results_filename provided, ask user to provide it
@@ -276,6 +280,7 @@ class Ideafinder:
             with open(results_filename, 'r', encoding='utf-8') as file:
                 line_count = 0
                 high_score_count = 0
+                all_score_count = 0
                 
                 for line in file:
                     line_count += 1
@@ -286,21 +291,26 @@ class Ideafinder:
                         # Extract the assistant's content from the response
                         if 'response' in result and 'body' in result['response']:
                             content = result['response']['body']['choices'][0]['message']['content']
+                            print(f"{YELLOW}Processing line {line_count}...{RESET}")
                             
-                            # Parse the formatted response (PROBLEM=X|SCORE=Y|REASON=Z)
+                            # Parse the formatted response (PROBLEM=X|COMMENT=Y|SCORE=Z|REASON=W)
                             parts = content.split('|')
-                            if len(parts) == 3:
-                                problem_part = parts[0].strip()
-                                score_part = parts[1].strip()
-                                reason_part = parts[2].strip()
+                            if len(parts) >= 3:  # Changed from == 3 to >= 3 to handle 4 parts
+                                # Find the parts by prefix rather than position
+                                problem_part = next((p for p in parts if p.strip().startswith('PROBLEM=')), "")
+                                score_part = next((p for p in parts if p.strip().startswith('SCORE=')), "")
+                                reason_part = next((p for p in parts if p.strip().startswith('REASON=')), "")
+                                comment_part = next((p for p in parts if p.strip().startswith('COMMENT=')), "")
                                 
                                 # Extract the score
                                 score = 0
-                                if score_part.startswith('SCORE='):
+                                if score_part:
                                     try:
-                                        score = int(score_part[6:])
+                                        score = int(score_part.strip()[6:])
+                                        all_score_count += 1
+                                        print(f"{GREEN}Found score: {score}{RESET}")
                                     except ValueError:
-                                        print(f"{YELLOW}Invalid score format in line {line_count}{RESET}")
+                                        print(f"{YELLOW}Invalid score format in line {line_count}: {score_part}{RESET}")
                                 
                                 if score >= 85:
                                     high_score_count += 1
@@ -310,23 +320,66 @@ class Ideafinder:
                                         "problem": problem,
                                         "score": score,
                                         "reason": reason,
+                                        "comment": comment_part[8:] if comment_part.startswith('COMMENT=') else comment_part,
                                         "custom_id": result.get("custom_id", "")
                                     })
-                    
+                            else:
+                                print(f"{YELLOW}Response format doesn't match expected pattern in line {line_count}. Found {len(parts)} parts.{RESET}")
+                
                     except json.JSONDecodeError:
                         print(f"{YELLOW}Invalid JSON in line {line_count}{RESET}")
                     except Exception as e:
                         print(f"{YELLOW}Error processing line {line_count}: {e}{RESET}")
+        
+            print(f"\n{GREEN}Found {all_score_count} scores in total{RESET}")
+            
+            # If no high scores but we have ideas, reduce the threshold
+            if high_score_count == 0 and all_score_count > 0:
+                print(f"{YELLOW}No ideas with score >= 85 found. Lowering threshold to 80...{RESET}")
+                
+                # Re-process the file with lower threshold
+                with open(results_filename, 'r', encoding='utf-8') as file:
+                    for line in file:
+                        try:
+                            result = json.loads(line)
+                            if 'response' in result and 'body' in result['response']:
+                                content = result['response']['body']['choices'][0]['message']['content']
+                                parts = content.split('|')
+                                
+                                problem_part = next((p for p in parts if p.strip().startswith('PROBLEM=')), "")
+                                score_part = next((p for p in parts if p.strip().startswith('SCORE=')), "")
+                                reason_part = next((p for p in parts if p.strip().startswith('REASON=')), "")
+                                comment_part = next((p for p in parts if p.strip().startswith('COMMENT=')), "")
+                                
+                                if score_part:
+                                    try:
+                                        score = int(score_part.strip()[6:])
+                                        if score >= 80:  # Lower threshold to 80
+                                            high_score_count += 1
+                                            problem = problem_part[8:] if problem_part.startswith('PROBLEM=') else problem_part
+                                            reason = reason_part[7:] if reason_part.startswith('REASON=') else reason_part
+                                            high_potential_ideas.append({
+                                                "problem": problem,
+                                                "score": score,
+                                                "reason": reason,
+                                                "comment": comment_part[8:] if comment_part.startswith('COMMENT=') else comment_part,
+                                                "custom_id": result.get("custom_id", "")
+                                            })
+                                    except ValueError:
+                                        pass
+                        except:
+                            pass
             
             if high_potential_ideas:
                 output_filename = f"high_potential_ideas_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.json"
                 with open(output_filename, 'w', encoding='utf-8') as outfile:
                     json.dump(high_potential_ideas, outfile, indent=2)
                 
-                print(f"\n{GREEN}Found {high_score_count} high-scoring ideas (score >= 85) out of {line_count} total.{RESET}")
+                threshold = 80 if high_score_count == 0 and all_score_count > 0 else 85
+                print(f"\n{GREEN}Found {len(high_potential_ideas)} high-scoring ideas (score >= {threshold}) out of {line_count} total.{RESET}")
                 print(f"{GREEN}Filtered results saved to {output_filename}{RESET}")
             else:
-                print(f"\n{YELLOW}No high-scoring ideas (score >= 85) found in {line_count} results.{RESET}")
+                print(f"\n{YELLOW}No high-scoring ideas found in {line_count} results.{RESET}")
         
         except Exception as e:
             print(f"{RED}Error processing results file: {e}{RESET}")
