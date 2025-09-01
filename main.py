@@ -6,6 +6,7 @@ from openai import OpenAI
 import os
 import requests
 from dotenv import load_dotenv
+import sys
 
 load_dotenv()
 
@@ -17,7 +18,18 @@ RESET = "\033[0m"
 class Ideafinder:
     def __init__(self, url_to_scrape, how_many_posts_to_scrape, how_many_comments_to_scrape, browser_needed):
         if browser_needed != False:
-            self.driver = webdriver.Chrome()
+            # Add options for headless mode
+            from selenium.webdriver.chrome.options import Options
+            chrome_options = Options()
+            chrome_options.add_argument("--headless")
+            chrome_options.add_argument("--disable-gpu")
+            chrome_options.add_argument("--window-size=1920,1080")
+            chrome_options.add_argument("--no-sandbox")
+            chrome_options.add_argument("--disable-dev-shm-usage")
+            # Set user agent to avoid detection
+            chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36")
+            
+            self.driver = webdriver.Chrome(options=chrome_options)
         self.url_to_scrape = url_to_scrape
         self.how_many_posts_to_scrape = how_many_posts_to_scrape
         self.how_many_comments_to_scrape = how_many_comments_to_scrape
@@ -477,37 +489,39 @@ class Ideafinder:
         print(f"\n{YELLOW}Start batch api request{RESET}")
         self.sendBatchApiRequest()
 
-def main():
+def main(subreddit_url, choice, post_to_scrape, comments_per_post_to_scrape):
     try:
-        choice = int(input(f"{GREEN}What do you want to do:\n1. Scrape\n2. Get Batch results{RESET}\n{YELLOW}Input: {RESET}"))       
-        match choice:
-            case 1:
+        choice = choice
+        
+        if choice == 1:
+            # For scraping Reddit
+            if subreddit_url != "":
+                url_to_scrape = subreddit_url
+            else:
                 url_to_scrape = input(f"\n{YELLOW}URL to scrape: {RESET}")
-                
-                how_many_posts_to_scrape = input(f"\n{YELLOW}How many posts should be scraped (default 20): {RESET}")
-                try:
-                    how_many_posts_to_scrape = int(how_many_posts_to_scrape)
-                except:
-                    print(f"{RED}Couldn't convert posts to scrape, going to default 20{RESET}")
-                    how_many_posts_to_scrape = 20
-
-                how_many_comments_to_scrape = input(f"\n{YELLOW}How many comments should be scraped (default 30): {RESET}")
-                try:
-                    how_many_comments_to_scrape = int(how_many_comments_to_scrape)
-                except:
-                    print(f"{RED}Couldn't convert comments to scrape, going to default 30{RESET}")
-                    how_many_comments_to_scrape = 30
-                
-                finder = Ideafinder(url_to_scrape, how_many_posts_to_scrape, how_many_comments_to_scrape, True)
-                finder.orchastrateIdeafinder()
-            case 2:
-                finder = Ideafinder("", "", "", False)
-                finder.retrieveBatchResults()
-            case _:
-                print(f"\n{RED}Invalid input! Program stopped.{RESET}\n")
+            
+            how_many_posts_to_scrape = 20
+            try:
+                how_many_posts_to_scrape = int(post_to_scrape)
+            except ValueError:
+                print(f"{YELLOW}Invalid posts count, using default 20{RESET}")
+            
+            how_many_comments_to_scrape = 30
+            try:
+                how_many_comments_to_scrape = int(comments_per_post_to_scrape)
+            except ValueError:
+                print(f"{YELLOW}Invalid comments count, using default 30{RESET}")
+            
+            finder = Ideafinder(url_to_scrape, how_many_posts_to_scrape, how_many_comments_to_scrape, True)
+            finder.orchastrateIdeafinder()
+            
+        elif choice == 2:
+            # For retrieving batch results
+            finder = Ideafinder("", "", "", False)
+            finder.retrieveBatchResults()
+            
+        else:
+            print(f"\n{RED}Invalid choice! Use 1 for scraping or 2 for retrieving results.{RESET}")
+            
     except Exception as e:
-        print(f"\n{RED}Uncaugt error in main function: {e}{RESET}\n")
-
-if __name__ == "__main__":
-    main()
-
+        print(f"\n{RED}Uncaught error in main function: {e}{RESET}\n")
