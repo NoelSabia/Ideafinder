@@ -34,6 +34,7 @@ class Ideafinder:
         self.how_many_posts_to_scrape = how_many_posts_to_scrape
         self.how_many_comments_to_scrape = how_many_comments_to_scrape
         self.jsonl_name = ""
+        self.resultsFilename = ""
     
     def getAnkers(self) -> list:
         """
@@ -458,6 +459,7 @@ class Ideafinder:
                     content_response = requests.get(file_content_url, headers=file_headers)
                     if content_response.status_code == 200:
                         results_filename = f"results_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.jsonl"
+                        self.resultsFilename = results_filename
                         with open(results_filename, "wb") as f:
                             f.write(content_response.content)
                         print(f"{GREEN}Results downloaded to {results_filename}{RESET}")
@@ -478,6 +480,9 @@ class Ideafinder:
         print(f"{YELLOW}Reached maximum polling attempts. Check status manually with:{RESET}")
         print(f"curl https://api.openai.com/v1/batches/{batch_id} -H \"Authorization: Bearer $OPENAI_API_KEY\" -H \"OpenAI-Beta: batch/v1\"")
     
+    def getFilenameOfHighscoringIdeas(self) -> str:
+        return self.resultsFilename
+    
     def orchastrateIdeafinder(self) -> None:
         """
         This function is just to organize
@@ -489,7 +494,7 @@ class Ideafinder:
         print(f"\n{YELLOW}Start batch api request{RESET}")
         self.sendBatchApiRequest()
 
-def main(subreddit_url, choice, post_to_scrape, comments_per_post_to_scrape):
+def main(subreddit_url, choice, post_to_scrape, comments_per_post_to_scrape) -> str:
     try:
         choice = choice
         
@@ -514,6 +519,7 @@ def main(subreddit_url, choice, post_to_scrape, comments_per_post_to_scrape):
             
             finder = Ideafinder(url_to_scrape, how_many_posts_to_scrape, how_many_comments_to_scrape, True)
             finder.orchastrateIdeafinder()
+            return (finder.getFilenameOfHighscoringIdeas)
             
         elif choice == 2:
             # For retrieving batch results
@@ -525,3 +531,10 @@ def main(subreddit_url, choice, post_to_scrape, comments_per_post_to_scrape):
             
     except Exception as e:
         print(f"\n{RED}Uncaught error in main function: {e}{RESET}\n")
+    
+
+# if __name__ == "__main__":
+#     main("https://www.reddit.com/r/Vent/", 1, 20, 30)
+
+# if __name__ == "__main__":
+#     main("https://www.reddit.com/r/Vent/", 2, 20, 30)
