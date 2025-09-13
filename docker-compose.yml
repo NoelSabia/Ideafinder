@@ -1,5 +1,5 @@
 services:
-  frontend:
+  # frontend:
   
   backend-database:
     build: ./backend/database/
@@ -21,14 +21,14 @@ services:
       - ideafinder
     restart: unless-stopped
 
-  backend-api:
-    build: ./backend/api/
-    container_name: IDEAFINDER_API
-    ports:
-      - "8000:8000"
-    networks:
-      - ideafinder
-    restart: unless-stopped
+  # backend-api:
+  #   build: ./backend/api/
+  #   container_name: IDEAFINDER_API
+  #   ports:
+  #     - "8000:8000"
+  #   networks:
+  #     - ideafinder
+  #   restart: unless-stopped
   
 
 networks:
