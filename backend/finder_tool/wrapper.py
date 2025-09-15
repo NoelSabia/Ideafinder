@@ -1,6 +1,6 @@
 import asyncio
 import json
-import asyncpg  # Replace psycopg2 with asyncpg
+import asyncpg
 from dataclasses import dataclass, asdict
 from typing import List
 import os
@@ -10,12 +10,6 @@ from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
-
-# Access environment variables
-db_user = os.getenv('POSTGRES_USER', 'postgres')
-db_password = os.getenv('POSTGRES_PASSWORD', 'default_password')
-db_name = os.getenv('POSTGRES_DB', 'postgres')
-db_host = os.getenv('POSTGRES_HOST', 'localhost')  # Default to localhost if not set
 
 @dataclass
 class Problem:
@@ -91,7 +85,7 @@ async def analyze_problem_with_openai(problem: Problem) -> Problem:
         """
 
         response = client.chat.completions.create(
-            model="gpt-4.1-mini",
+            model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "You are a helpful assistant analyzing business ideas."},
                 {"role": "user", "content": prompt}
@@ -127,13 +121,17 @@ async def analyze_problem_with_openai(problem: Problem) -> Problem:
     return problem
 
 async def upload_problems_to_db(problems: List[Problem]) -> None:
-    """Upload the problems to PostgreSQL database using asyncpg"""
+    """Upload the problems to PostgreSQL database"""
+    if not problems:
+        print("No problems to upload")
+        return
+        
     try:
         # Get connection parameters from environment variables
         db_user = os.getenv('POSTGRES_USER', 'postgres')
-        db_password = os.getenv('POSTGRES_PASSWORD', os.getenv("POSTGRES_PASSWORD"))
-        db_name = os.getenv('POSTGRES_DB', 'postgres')
-        db_host = os.getenv('POSTGRES_HOST', 'backend-database')
+        db_password = os.getenv('POSTGRES_PASSWORD', 'default_password')
+        db_name = os.getenv('POSTGRES_DB', 'ideafinder')
+        db_host = os.getenv('POSTGRES_HOST', 'localhost')
         
         # Connect to the database
         conn = await asyncpg.connect(
@@ -144,7 +142,7 @@ async def upload_problems_to_db(problems: List[Problem]) -> None:
             port=5432
         )
         
-        # Create table if not exists (without score, comment, custom_id)
+        # Create table
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS problems (
                 id SERIAL PRIMARY KEY,
@@ -155,11 +153,14 @@ async def upload_problems_to_db(problems: List[Problem]) -> None:
                 potential_customers TEXT,
                 why_pay TEXT,
                 mvp TEXT,
-                finished_product TEXT
+                finished_product TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
         
-        # Insert problems (without score, comment, custom_id)
+        print(f"Uploading {len(problems)} problems to database")
+        
+        # Insert problems
         for problem in problems:
             await conn.execute("""
                 INSERT INTO problems (
@@ -174,10 +175,43 @@ async def upload_problems_to_db(problems: List[Problem]) -> None:
         
         await conn.close()
         print(f"Successfully uploaded {len(problems)} problems to database")
+        
     except Exception as e:
         print(f"Error uploading to database: {str(e)}")
 
+async def process_file(filename: str) -> None:
+    """Process a single JSON file"""
+    try:
+        with open(filename, 'r', encoding='utf-8') as ideafile:
+            data = json.load(ideafile)
+            problems = [Problem.from_dict(item) for item in data]
+            
+            # Step 4: Analyze each problem with OpenAI
+            enhanced_problems = []
+            for problem in problems:
+                enhanced_problem = await analyze_problem_with_openai(problem)
+                enhanced_problems.append(enhanced_problem)
+            
+            # Step 5: Upload enhanced problems to DB
+            await upload_problems_to_db(enhanced_problems)
+            
+            # Clean up file after processing
+            os.remove(filename)
+            print(f"Cleaned up file: {filename}")
+            
+    except Exception as e:
+        print(f"Error processing file {filename}: {str(e)}")
+
+async def test_wrapper_main() -> None:
+    """Test function using hardcoded file"""
+    filename = 'high_potential_ideas_2025-08-27_16-24-44.json'
+    if os.path.exists(filename):
+        await process_file(filename)
+    else:
+        print(f"Test file {filename} not found")
+
 async def wrapper_main() -> None:
+    """Main wrapper function"""
     subreddits = ['https://www.reddit.com/r/Vent',
                   'https://www.reddit.com/r/Business_Ideas',
                   'https://www.reddit.com/r/Entrepreneur',
@@ -196,22 +230,7 @@ async def wrapper_main() -> None:
 
             # Step 3: Process the results file
             if idea_filename and os.path.exists(idea_filename):
-                try:
-                    with open(idea_filename, 'r', encoding='utf-8') as ideafile:
-                        data = json.load(ideafile)
-                        problems = [Problem.from_dict(item) for item in data]
-                        
-                        # Step 4: Analyze each problem with OpenAI
-                        enhanced_problems = []
-                        for problem in problems:
-                            enhanced_problem = await analyze_problem_with_openai(problem)
-                            enhanced_problems.append(enhanced_problem)
-                        
-                        # Step 5: Upload enhanced problems to DB
-                        await upload_problems_to_db(enhanced_problems)
-                        
-                except Exception as e:
-                    print(f"Error processing file {idea_filename}: {str(e)}")
+                await process_file(idea_filename)
             else:
                 print(f"No valid filename returned for {subreddit}")
 
@@ -219,4 +238,4 @@ async def wrapper_main() -> None:
         await asyncio.sleep(604800)
 
 if __name__ == "__main__":
-    asyncio.run(wrapper_main())
+    asyncio.run(test_wrapper_main())

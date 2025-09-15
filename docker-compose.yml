@@ -7,6 +7,8 @@ services:
     networks:
       - ideafinder
     restart: unless-stopped
+    ports:
+      - "5432:5432" # delete to not 
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
@@ -14,12 +16,12 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
   
-  backend-finder-tool:
-    build: ./backend/finder_tool/
-    container_name: IDEAFINDER_TOOL
-    networks:
-      - ideafinder
-    restart: unless-stopped
+  # backend-finder-tool:
+  #   build: ./backend/finder_tool/
+  #   container_name: IDEAFINDER_TOOL
+  #   networks:
+  #     - ideafinder
+  #   restart: unless-stopped
 
   # backend-api:
   #   build: ./backend/api/
