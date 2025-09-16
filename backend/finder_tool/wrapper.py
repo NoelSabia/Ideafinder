@@ -197,18 +197,18 @@ async def process_file(filename: str) -> None:
             
             # Clean up file after processing
             os.remove(filename)
-            print(f"Cleaned up file: {filename}")
+            # print(f"Cleaned up file: {filename}")
             
     except Exception as e:
         print(f"Error processing file {filename}: {str(e)}")
 
-async def test_wrapper_main() -> None:
-    """Test function using hardcoded file"""
-    filename = 'high_potential_ideas_2025-08-27_16-24-44.json'
-    if os.path.exists(filename):
-        await process_file(filename)
-    else:
-        print(f"Test file {filename} not found")
+# async def test_wrapper_main() -> None:
+#     """Test function using hardcoded file"""
+#     filename = 'high_potential_ideas_2025-08-27_16-24-44.json'
+#     if os.path.exists(filename):
+#         await process_file(filename)
+#     else:
+#         print(f"Test file {filename} not found")
 
 async def wrapper_main() -> None:
     """Main wrapper function"""
