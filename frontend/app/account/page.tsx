@@ -42,8 +42,8 @@ export default function AccountPage() {
                 className={`
                   w-full text-left p-3 rounded-lg transition-colors text-sm
                   ${selectedIdea.id === idea.id
-                    ? 'bg-indigo-600 font-semibold shadow-lg' // Active state
-                    : 'hover:bg-slate-700' // Hover state
+                    ? 'bg-[#872524] font-semibold shadow-lg'
+                    : 'hover:bg-[#872524]'
                   }
                 `}
               >
@@ -95,7 +95,7 @@ export default function AccountPage() {
               <span className="font-medium text-slate-200">{mockAccountInfo.memberSince}</span>
             </div>
           </div>
-          <button className="w-full mt-8 bg-slate-700 hover:bg-slate-600 p-3 rounded-lg transition-colors text-sm font-semibold">
+          <button className="w-full mt-8 bg-[#872524] hover:bg-[#7a2121] p-3 rounded-lg transition-colors text-sm font-semibold">
             Manage Subscription
           </button>
         </div>

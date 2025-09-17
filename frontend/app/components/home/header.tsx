@@ -36,15 +36,15 @@ export default function Header() {
                             <Link key={link.href} href={link.href}>
                                 <span className={`text-base font-medium transition-colors ${
                                     pathname === link.href 
-                                        ? 'text-indigo-600' 
+                                        ? 'text-[#872524]' 
                                         : 'text-gray-500 hover:text-gray-900'
                                 }`}>
                                     {link.label}
                                 </span>
                             </Link>
                         ))}
-                        <Link href="/buy">
-                            <span className="ml-4 inline-flex items-center justify-center px-5 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-colors">
+                        <Link href="/pricing">
+                            <span className="ml-4 inline-flex items-center justify-center px-5 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-[#872524] hover:bg-[#7a2121] transition-colors">
                                 Get ideas
                             </span>
                         </Link>
@@ -84,7 +84,7 @@ export default function Header() {
                                 </span>
                             </Link>
                         ))}
-                         <Link href="/buy" onClick={closeMenu}>
+                         <Link href="/pricing" onClick={closeMenu}>
                             <span className="block w-full mt-2 rounded-md bg-indigo-600 px-3 py-2 text-center text-base font-medium text-white shadow hover:bg-indigo-700">
                                 Get ideas
                             </span>
