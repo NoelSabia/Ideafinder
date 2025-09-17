@@ -192,6 +192,7 @@ async def process_file(filename: str) -> None:
                 enhanced_problem = await analyze_problem_with_openai(problem)
                 enhanced_problems.append(enhanced_problem)
             
+            print("Uploading problems to db")
             # Step 5: Upload enhanced problems to DB
             await upload_problems_to_db(enhanced_problems)
             
@@ -222,9 +223,11 @@ async def wrapper_main() -> None:
 
     while True:
         for subreddit in subreddits:
+            print(f"Scraping for {subreddit}")
             # Step 1: Send batch request to scraper
             await scraper_main(subreddit, 1, 20, 30)
             
+            print("Waiting for response")
             # Step 2: Get response and filename
             idea_filename = await scraper_main(subreddit, 2, 20, 30)
 
@@ -238,4 +241,4 @@ async def wrapper_main() -> None:
         await asyncio.sleep(604800)
 
 if __name__ == "__main__":
-    asyncio.run(test_wrapper_main())
+    asyncio.run(wrapper_main())

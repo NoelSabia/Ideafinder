@@ -80,7 +80,7 @@ class Ideafinder:
             }
             
             payload = {
-                "model": "gpt-4.1-mini",
+                "model": "gpt-4o-mini",
                 "messages": [
                     {"role": "system", "content": "You are a helpful assistant that summarizes text as concisely as possible while retaining key information."},
                     {"role": "user", "content": f"Summarize this post in 2-3 sentences, focusing on the main topic and key points:\n\n{post_content}"}
@@ -173,7 +173,7 @@ class Ideafinder:
                                 "method": "POST",
                                 "url": "/v1/chat/completions",
                                 "body": {
-                                    "model": "gpt-4.1-mini",
+                                    "model": "gpt-4o-mini",
                                     "messages": [
                                         {"role": "system", "content": "You are an assistant to help me evaluate business ideas."},
                                         {"role": "user", "content": combined_text}
