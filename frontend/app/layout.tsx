@@ -1,5 +1,12 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import Header from "./components/home/header";
+import Footer from "./components/home/footer";
+import { Rochester } from 'next/font/google';
+
+const sansation = Rochester({
+  weight: "400"
+})
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -9,9 +16,11 @@ export const metadata: Metadata = {
 export default function RootLayout({children,}: Readonly<{children: React.ReactNode;}>)
 {
   return (
-    <html lang="en">
+    <html lang="en" className="overscroll-y-contain">
       <body>
+        <Header/>
         {children}
+        <Footer/>
       </body>
     </html>
   );
