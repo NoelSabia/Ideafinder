@@ -88,7 +88,7 @@ export default function AccountPage() {
             </div>
             <div className="flex justify-between">
               <span className="text-slate-400">Plan</span>
-              <span className="font-medium text-purple-400">{mockAccountInfo.subscriptionType}</span>
+              <span className="font-medium text-[#872524]">{mockAccountInfo.subscriptionType}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-400">Member Since</span>
