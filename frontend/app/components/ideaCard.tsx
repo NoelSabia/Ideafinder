@@ -8,7 +8,7 @@ export default function IdeaCard ({ idea }: IdeaCardProps) {
   return (
     <div className="relative z-10 flex flex-col max-w-lg w-full h-full justify-center p-8 bg-black/30 backdrop-blur-2xl border border-white/10 rounded-2xl hover:scale-102 duration-300">
       <div className="text-center">
-        <h1 className="text-5xl sm:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-br from-white to-gray-400">
+        <h1 className="text-5xl sm:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-br from-white to-gray-400 p-1">
           {idea.problem}
         </h1>
         <h2 className="text-xl text-gray-300 mt-4">

@@ -9,22 +9,22 @@ export default function Footer() {
                 <div className="flex flex-col items-center gap-4">
                     <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
                         <Link href="/imprint">
-                            <span className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
+                            <span className="text-sm font-medium text-gray-800 transition-colors">
                                 Imprint
                             </span>
                         </Link>
                         <Link href="/privacypolicy">
-                            <span className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
+                            <span className="text-sm font-medium text-gray-800 transition-colors">
                                 Privacy Policy
                             </span>
                         </Link>
                         <Link href="/tos">
-                            <span className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
+                            <span className="text-sm font-medium text-gray-800 transition-colors">
                                 Terms of Service
                             </span>
                         </Link>
                     </div>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-gray-800">
                         &copy; {currentYear} Ideafinder. All rights reserved.
                     </p>
                 </div>

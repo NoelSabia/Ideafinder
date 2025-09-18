@@ -3,6 +3,7 @@ import "./globals.css";
 import Header from "./components/home/header";
 import Footer from "./components/home/footer";
 import { Rochester } from 'next/font/google';
+import SessionProvider from "./components/SessionProvider"
 
 const sansation = Rochester({
   weight: "400"
@@ -18,9 +19,11 @@ export default function RootLayout({children,}: Readonly<{children: React.ReactN
   return (
     <html lang="en" className="overscroll-y-contain">
       <body>
-        <Header/>
-        {children}
-        <Footer/>
+        <SessionProvider>
+          <Header/>
+          {children}
+          <Footer/>
+        </SessionProvider>
       </body>
     </html>
   );

@@ -19,7 +19,7 @@ export type Idea = {
 const ideas: Idea[] = [
   {
     id: 1,
-    problem: 'Recommendation Validator',
+    problem: 'Recommen-\ndation Validator',
     reason: `The comment highlights a specific problem of validating recommendations within the anime community, indicating a potential for a software solution that helps users filter and verify recommendations based on trusted sources or user reviews. The pain of wasted time on poor recommendations suggests measurable user dissatisfaction, and it points to anime fans as a clear target user group, making it a concrete and actionable SaaS opportunity.`,
     mission: `To provide anime fans with a reliable platform for validating recommendations through trusted sources and user reviews, ensuring they spend their time on quality content.`,
     competition: `Existing platforms like MyAnimeList and AniList offer user ratings but lack a focused validation system for recommendations. Competitors include social media groups and forums where opinions may vary widely.`,
@@ -89,7 +89,7 @@ export default function Home() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-[#872524]/20 rounded-full blur-3xl opacity-50"></div>
         <div className="relative z-10 flex flex-col space-y-8">
             <div>
-              <h1 className="text-5xl lg:text-6xl font-bold tracking-tighter bg-clip-text text-transparent bg-gradient-to-br from-white to-gray-400">
+              <h1 className="text-5xl lg:text-6xl font-bold tracking-tighter bg-clip-text text-transparent bg-gradient-to-br from-white to-gray-400 py-1">
                 Stop Searching.
                 <br />
                 Start Building.
