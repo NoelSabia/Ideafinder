@@ -30,7 +30,6 @@ export default function PricingPage() {
           </div>
           <ul className="space-y-4 mt-8 flex-grow">
             <li className="flex items-center gap-3"><CheckIcon /> 1 Idea Credit</li>
-            <li className="flex items-center gap-3"><CheckIcon /> Access to All Categories</li>
             <li className="flex items-center gap-3"><CheckIcon /> Standard Support</li>
           </ul>
           <button className="w-full mt-8 bg-[#872524] hover:bg-[#7a2121] p-3 rounded-lg transition-colors font-semibold">
@@ -50,9 +49,8 @@ export default function PricingPage() {
             <span className="text-slate-400"> / month</span>
           </div>
           <ul className="space-y-4 mt-8 flex-grow">
-            <li className="flex items-center gap-3"><CheckIcon /> 4 Ideas per Month</li>
-            <li className="flex items-center gap-3"><CheckIcon /> Access to All Categories</li>
-            <li className="flex items-center gap-3"><CheckIcon /> Save & Organize Ideas</li>
+            <li className="flex items-center gap-3"><CheckIcon /> 4 Idea Credits per Month</li>
+            <li className="flex items-center gap-3"><CheckIcon /> E-Book for Ideavalidation</li>
             <li className="flex items-center gap-3"><CheckIcon /> Priority Support</li>
           </ul>
           <button className="w-full mt-8 bg-[#872524] hover:bg-[#7a2121] p-3 rounded-lg transition-colors font-semibold">
@@ -69,11 +67,10 @@ export default function PricingPage() {
             <span className="text-slate-400"> / month</span>
           </div>
           <ul className="space-y-4 mt-8 flex-grow">
-            <li className="flex items-center gap-3"><CheckIcon /> 20 Ideas per Month</li>
-            <li className="flex items-center gap-3"><CheckIcon /> Access to All Categories</li>
-            <li className="flex items-center gap-3"><CheckIcon /> Save & Organize Ideas</li>
+            <li className="flex items-center gap-3"><CheckIcon /> 20 Idea Credits per Month</li>
+            <li className="flex items-center gap-3"><CheckIcon /> E-Book for Ideavalidation</li>
             <li className="flex items-center gap-3"><CheckIcon /> Early Access to New Features</li>
-            <li className="flex items-center gap-3"><CheckIcon /> Dedicated Support</li>
+            <li className="flex items-center gap-3"><CheckIcon /> Priority Support</li>
           </ul>
           <button className="w-full mt-8 bg-[#872524] hover:bg-[#7a2121] p-3 rounded-lg transition-colors font-semibold">
             Become a Visionary

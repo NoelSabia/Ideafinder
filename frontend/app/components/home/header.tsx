@@ -77,7 +77,7 @@ export default function Header() {
                              <Link key={link.href} href={link.href} onClick={closeMenu}>
                                 <span className={`block rounded-md px-3 py-2 text-base font-medium transition-colors ${
                                     pathname === link.href 
-                                        ? 'bg-indigo-50 border-indigo-500 text-indigo-700' 
+                                        ? 'text-[#872524]' 
                                         : 'border-transparent text-gray-600 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-800'
                                 }`}>
                                     {link.label}
@@ -85,7 +85,7 @@ export default function Header() {
                             </Link>
                         ))}
                          <Link href="/pricing" onClick={closeMenu}>
-                            <span className="block w-full mt-2 rounded-md bg-indigo-600 px-3 py-2 text-center text-base font-medium text-white hover:bg-indigo-700">
+                            <span className="block w-full mt-2 rounded-md bg-[#872524] px-3 py-2 text-center text-base font-medium text-white hover:bg-indigo-700">
                                 Get ideas
                             </span>
                         </Link>

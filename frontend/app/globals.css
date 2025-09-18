@@ -33,7 +33,7 @@ html::before {
   height: 100%;
   background: url('/dddepth-040.jpg') no-repeat center center;
   background-size: cover;
-  filter: brightness(0.7); /*Adjust value as needed: 0.7 = 70% brightness*/
+  filter: brightness(0.5); /*Adjust value as needed: 0.7 = 70% brightness*/
   z-index: -1;
 }
 

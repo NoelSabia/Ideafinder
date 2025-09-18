@@ -1,4 +1,4 @@
-"use client"; // This page is interactive, so we need to make it a Client Component
+"use client";
 
 import { useState } from 'react';
 
