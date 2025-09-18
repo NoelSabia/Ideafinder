@@ -17,7 +17,7 @@ export default function Header() {
     const closeMenu = () => setIsMenuOpen(false);
 
     return (
-        <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
+        <header className="bg-white sticky top-0 z-50">
             <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" aria-label="Top">
                 <div className="flex w-full items-center justify-between py-4">
                     
@@ -44,7 +44,7 @@ export default function Header() {
                             </Link>
                         ))}
                         <Link href="/pricing">
-                            <span className="ml-4 inline-flex items-center justify-center px-5 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-[#872524] hover:bg-[#7a2121] transition-colors">
+                            <span className="ml-4 inline-flex items-center justify-center px-5 py-2 rounded-md text-base font-medium text-white bg-[#872524] hover:bg-[#7a2121] transition-colors">
                                 Get ideas
                             </span>
                         </Link>
@@ -85,7 +85,7 @@ export default function Header() {
                             </Link>
                         ))}
                          <Link href="/pricing" onClick={closeMenu}>
-                            <span className="block w-full mt-2 rounded-md bg-indigo-600 px-3 py-2 text-center text-base font-medium text-white shadow hover:bg-indigo-700">
+                            <span className="block w-full mt-2 rounded-md bg-indigo-600 px-3 py-2 text-center text-base font-medium text-white hover:bg-indigo-700">
                                 Get ideas
                             </span>
                         </Link>

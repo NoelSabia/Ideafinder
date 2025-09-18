@@ -7,7 +7,7 @@ const CheckIcon = () => (
 
 export default function PricingPage() {
   return (
-    <main className="min-h-[90vh] w-full flex items-center justify-center backdrop-blur-xl text-white p-8 bg-noise">
+    <main className="min-h-[90vh] w-full flex items-center justify-center  text-white p-8 bg-noise">
 
       <div className="w-full">
       {/* --- Header --- */}
@@ -21,7 +21,7 @@ export default function PricingPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
 
         {/* --- Tier 1: Spark --- */}
-        <div className="flex flex-col bg-slate-800/50 backdrop-blur-lg border border-white/10 rounded-2xl p-8">
+        <div className="flex flex-col bg-slate-800/50 backdrop-blur-lg border border-white/10 rounded-2xl p-8 hover:scale-102 duration-300">
           <h3 className="text-2xl font-bold">Spark</h3>
           <p className="mt-2 text-slate-400">For a quick burst of insight.</p>
           <div className="mt-6">
@@ -39,7 +39,7 @@ export default function PricingPage() {
         </div>
 
         {/* --- Tier 2: Innovator (Highlighted) --- */}
-        <div className="relative flex flex-col bg-slate-800/50 backdrop-blur-lg border border-[#872524] rounded-2xl p-8 shadow-2xl">
+        <div className="relative flex flex-col bg-slate-800/50 backdrop-blur-lg border border-[#872524] rounded-2xl p-8 hover:scale-102 duration-300">
           <div className="absolute top-0 right-8 -translate-y-1/2 bg-[#872524] text-xs font-semibold px-3 py-1 rounded-full">
             Most Popular
           </div>
@@ -61,7 +61,7 @@ export default function PricingPage() {
         </div>
 
         {/* --- Tier 3: Visionary --- */}
-        <div className="flex flex-col bg-slate-800/50 backdrop-blur-lg border border-white/10 rounded-2xl p-8">
+        <div className="flex flex-col bg-slate-800/50 backdrop-blur-lg border border-white/10 rounded-2xl p-8 hover:scale-102 duration-300">
           <h3 className="text-2xl font-bold">Visionary</h3>
           <p className="mt-2 text-slate-400">For the professional ideator.</p>
           <div className="mt-6">

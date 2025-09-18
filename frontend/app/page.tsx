@@ -29,79 +29,39 @@ export default function Home() {
         </p>
       </div>
 
-      {/* Right Column: Updated textboxes */}
       <div className="relative z-10 flex flex-col justify-between h-full w-full max-w-md">
         
-        {/* Point 1 */}
         <div className="bg-slate-800/50 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:scale-102 duration-300">
           <div className="flex items-start gap-4">
             <Icon>
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-400"><path d="M12 22a10 10 0 0 0 10-10H2a10 10 0 0 0 10 10z"/><path d="M12 2a10 10 0 0 1 10 10"/><path d="M12 2a10 10 0 0 0-10 10"/><path d="M12 2v20"/><path d="M22 12a10 10 0 0 1-10 10"/><path d="M2 12a10 10 0 0 0 10 10"/></svg>
+              {/* --- ICON 1: Trending Up --- */}
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-400">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                <polyline points="17 6 23 6 23 12"></polyline>
+              </svg>
             </Icon>
             <div>
-              <h3 className="font-semibold text-lg text-gray-200">Beyond the Algorithm</h3>
+              <h3 className="font-semibold text-lg text-gray-200">Beyond the Hype: Uncover Real, Emerging Problems</h3>
               <p className="text-base text-gray-400 mt-2">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                Stop chasing ideas that have already peaked. IdeaFinder moves you from the crowded mainstream to the promising new frontier. Our platform continuously scans real-time data from across the web, to spot arising problems as they happen. We don't just show you what's popular now; we give you the insights to build for where the market is headed. Get ahead of the curve and discover ideas with genuine, untapped potential.
               </p>
             </div>
           </div>
         </div>
 
-        {/* Point 1 */}
         <div className="bg-slate-800/50 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:scale-102 duration-300">
           <div className="flex items-start gap-4">
             <Icon>
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-400"><path d="M12 22a10 10 0 0 0 10-10H2a10 10 0 0 0 10 10z"/><path d="M12 2a10 10 0 0 1 10 10"/><path d="M12 2a10 10 0 0 0-10 10"/><path d="M12 2v20"/><path d="M22 12a10 10 0 0 1-10 10"/><path d="M2 12a10 10 0 0 0 10 10"/></svg>
+              {/* --- ICON 2: Checklist --- */}
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-400">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
             </Icon>
             <div>
-              <h3 className="font-semibold text-lg text-gray-200">Beyond the Algorithm</h3>
+              <h3 className="font-semibold text-lg text-gray-200">From Idea to Actionable First Steps</h3>
               <p className="text-base text-gray-400 mt-2">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Point 1 */}
-        <div className="bg-slate-800/50 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:scale-102 duration-300">
-          <div className="flex items-start gap-4">
-            <Icon>
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-400"><path d="M12 22a10 10 0 0 0 10-10H2a10 10 0 0 0 10 10z"/><path d="M12 2a10 10 0 0 1 10 10"/><path d="M12 2a10 10 0 0 0-10 10"/><path d="M12 2v20"/><path d="M22 12a10 10 0 0 1-10 10"/><path d="M2 12a10 10 0 0 0 10 10"/></svg>
-            </Icon>
-            <div>
-              <h3 className="font-semibold text-lg text-gray-200">Beyond the Algorithm</h3>
-              <p className="text-base text-gray-400 mt-2">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Point 2 */}
-        <div className="bg-slate-800/50 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:scale-102 duration-300">
-          <div className="flex items-start gap-4">
-            <Icon>
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400"><path d="M5 3v4"/><path d="M19 3v4"/><path d="M21 8H3"/><path d="M21 14H3"/><path d="M21 20H3"/></svg>
-            </Icon>
-            <div>
-              <h3 className="font-semibold text-lg text-gray-200">Early Access to Insight</h3>
-              <p className="text-base text-gray-400 mt-2">
-                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Point 3 */}
-        <div className="bg-slate-800/50 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:scale-102 duration-300">
-          <div className="flex items-start gap-4">
-            <Icon>
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-pink-400"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-            </Icon>
-            <div>
-              <h3 className="font-semibold text-lg text-gray-200">A Universe of Concepts</h3>
-              <p className="text-base text-gray-400 mt-2">
-                Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+                Finding an idea is just the beginning. The real challenge is knowing how to start. IdeaFinder bridges the gap between inspiration and execution. For every promising idea, we provide a mini-blueprint to get you moving immediately. This includes potential business models (e.g., subscription, SaaS, e-commerce), a profile of your ideal first customer, and a curated list of the first three actionable steps to take. We don't just give you the "what," we give you the "how to start.
               </p>
             </div>
           </div>
