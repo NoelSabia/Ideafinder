@@ -81,13 +81,14 @@ export default function Home() {
     );
   }
 
-  return (
-    <main className="relative min-h-[90vh] w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center justify-items-center p-8 overflow-hidden text-white">
-      
-      {/* --- Left Column: Welcome & USPs --- */}
-      <div className="relative z-10 flex flex-col justify-center h-full w-full max-w-lg">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-[#872524]/20 rounded-full blur-3xl opacity-50"></div>
-        <div className="relative z-10 flex flex-col space-y-8">
+ return (
+    <main className="relative w-full flex flex-col md:flex-row text-white">
+
+      {/* --- Right Column (Fixed Content on Desktop) --- */}
+      <div className="w-full md:w-1/2 md:fixed md:top-0 md:right-0 md:h-screen flex items-center justify-center p-8">
+        <div className="relative z-10 flex flex-col justify-center w-full max-w-lg">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-[#872524]/20 rounded-full blur-3xl opacity-50"></div>
+          <div className="relative z-10 flex flex-col space-y-8">
             <div>
               <h1 className="text-5xl lg:text-6xl font-bold tracking-tighter bg-clip-text text-transparent bg-gradient-to-br from-white to-gray-400 py-1">
                 Stop Searching.
@@ -120,14 +121,17 @@ export default function Home() {
               onClick={generateNewIdea}
               className="w-full text-lg font-semibold bg-white text-black py-3 rounded-lg hover:bg-gray-200 duration-300"
             >
-                Generate New Idea
+              Generate New Idea
             </button>
+          </div>
         </div>
       </div>
 
-      {/* --- Right Column: Using the new IdeaCard component --- */}
-      <IdeaCard idea={randomIdea} />
-      
+      {/* --- Left Column (Scrollable Content) --- */}
+      <div className="w-full md:w-1/2 p-8 flex flex-col items-center">
+        <h2 className="md:hidden text-3xl font-bold mb-8 text-slate-300">Explore Ideas</h2>
+        <IdeaCard idea={randomIdea} />
+      </div>
     </main>
-  );
+  ); 
 }

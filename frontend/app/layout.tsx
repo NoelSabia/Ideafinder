@@ -2,12 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Header from "./components/home/header";
 import Footer from "./components/home/footer";
-import { Rochester } from 'next/font/google';
 import SessionProvider from "./components/SessionProvider"
-
-const sansation = Rochester({
-  weight: "400"
-})
 
 export const metadata: Metadata = {
   title: "Create Next App",

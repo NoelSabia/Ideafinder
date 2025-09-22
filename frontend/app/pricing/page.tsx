@@ -12,7 +12,7 @@ export default function PricingPage() {
       <div className="w-full">
       {/* --- Header --- */}
       <div className="text-center max-w-2xl mx-auto mb-16">
-        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
+        <h1 className="text-4xl sm:text-5xl font-bold tracking-tighter bg-clip-text text-transparent bg-gradient-to-br from-white to-gray-400 py-1">
           Find the Plan That Ignites You
         </h1>
       </div>
@@ -25,7 +25,7 @@ export default function PricingPage() {
           <h3 className="text-2xl font-bold">Spark</h3>
           <p className="mt-2 text-slate-400">For a quick burst of insight.</p>
           <div className="mt-6">
-            <span className="text-5xl font-bold">€5</span>
+            <span className="text-5xl font-bold">€1</span>
             <span className="text-slate-400"> / one-time</span>
           </div>
           <ul className="space-y-4 mt-8 flex-grow">
@@ -45,7 +45,7 @@ export default function PricingPage() {
           <h3 className="text-2xl font-bold">Innovator</h3>
           <p className="mt-2 text-slate-400">For the consistent creative.</p>
           <div className="mt-6">
-            <span className="text-5xl font-bold">€10</span>
+            <span className="text-5xl font-bold">€3</span>
             <span className="text-slate-400"> / month</span>
           </div>
           <ul className="space-y-4 mt-8 flex-grow">
@@ -63,7 +63,7 @@ export default function PricingPage() {
           <h3 className="text-2xl font-bold">Visionary</h3>
           <p className="mt-2 text-slate-400">For the professional ideator.</p>
           <div className="mt-6">
-            <span className="text-5xl font-bold">€50</span>
+            <span className="text-5xl font-bold">€5</span>
             <span className="text-slate-400"> / month</span>
           </div>
           <ul className="space-y-4 mt-8 flex-grow">
