@@ -1,15 +1,8 @@
 "use client";
 
-import { useState } from 'react';
-// The 'signIn' function and 'useRouter' hook need to be available in the component's scope.
-// In a local Next.js environment, the original imports are correct.
-// For this environment, we'll ensure they are defined.
-const signIn = (provider: string, options: object) => { 
-  console.log(`Signing in with ${provider}`, options);
-  // In a real app, this would be handled by NextAuth.
-  return Promise.resolve({ ok: true, error: null }); 
-};
-const useRouter = () => ({ push: (path: string) => console.log(`Redirecting to ${path}`) });
+import { useState, Suspense } from 'react';
+import { signIn } from 'next-auth/react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 
 // A simple SVG icon component for the Google button
@@ -22,11 +15,13 @@ const GoogleIcon = () => (
   </svg>
 );
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get('callbackUrl') || '/account';
 
   const handleCredentialsSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,8 +38,8 @@ export default function LoginPage() {
       // If there's an error, display it
       setError('Invalid email or password. Please try again.');
     } else if (result?.ok) {
-      // On successful sign-in, redirect to the dashboard
-      router.push('/dashboard');
+      // On successful sign-in, redirect to the callback URL
+      router.push(callbackUrl);
     }
   };
 
@@ -65,7 +60,7 @@ export default function LoginPage() {
 
           {/* Social Login Button */}
           <button
-            onClick={() => signIn("google", { callbackUrl: '/dashboard' })}
+            onClick={() => signIn("google", { callbackUrl })}
             className="w-full flex items-center justify-center gap-3 bg-slate-700/80 hover:bg-slate-700 border border-slate-600 rounded-lg py-3 font-semibold transition-colors duration-300"
           >
             <GoogleIcon />
@@ -137,5 +132,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-white">Loading...</div>}>
+      <LoginForm />
+    </Suspense>
   );
 }

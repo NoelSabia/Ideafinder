@@ -7,7 +7,7 @@ export async function middleware(request: NextRequest) {
 
   if (!session) {
     const requestedUrl = request.nextUrl.pathname;
-    const signInUrl = new URL('/signin', request.nextUrl.origin);
+    const signInUrl = new URL('/login', request.nextUrl.origin);
     signInUrl.searchParams.set('callbackUrl', requestedUrl);
     return NextResponse.redirect(signInUrl);
   }

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 // --- Mock Data ---
 // In a real app, this would come from an API call (e.g., using fetch or SWR)
@@ -19,12 +21,41 @@ const mockAccountInfo = {
   subscriptionType: 'Pro Tier',
   memberSince: 'Oct 2023',
 };
+
+// Function to get account info (could use session data in the future)
+const getAccountInfo = (session: any) => {
+  return {
+    ...mockAccountInfo,
+    username: session?.user?.name || mockAccountInfo.username,
+    email: session?.user?.email
+  };
+};
 // --- End Mock Data ---
 
 
 export default function AccountPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  
   // State to track which idea is currently selected
   const [selectedIdea, setSelectedIdea] = useState(mockIdeas[0]);
+
+  // Show loading state while checking authentication
+  if (status === "loading") {
+    return (
+      <main className="min-h-[90vh] w-full text-white p-4 sm:p-8 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-xl">Loading...</div>
+        </div>
+      </main>
+    );
+  }
+
+  // Redirect if not authenticated (this shouldn't happen due to middleware, but it's a good fallback)
+  if (status === "unauthenticated") {
+    router.push('/login?callbackUrl=/account');
+    return null;
+  }
 
   return (
     <main className="min-h-[90vh] w-full text-white p-4 sm:p-8">
@@ -80,19 +111,25 @@ export default function AccountPage() {
           <div className="space-y-4 text-sm">
             <div className="flex justify-between">
               <span className="text-slate-400">Username</span>
-              <span className="font-medium text-slate-200">{mockAccountInfo.username}</span>
+              <span className="font-medium text-slate-200">{getAccountInfo(session).username}</span>
             </div>
+            {getAccountInfo(session).email && (
+              <div className="flex justify-between">
+                <span className="text-slate-400">Email</span>
+                <span className="font-medium text-slate-200">{getAccountInfo(session).email}</span>
+              </div>
+            )}
             <div className="flex justify-between">
               <span className="text-slate-400">Total Ideas</span>
-              <span className="font-medium text-slate-200">{mockAccountInfo.totalIdeas}</span>
+              <span className="font-medium text-slate-200">{getAccountInfo(session).totalIdeas}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-400">Plan</span>
-              <span className="font-medium text-[#872524]">{mockAccountInfo.subscriptionType}</span>
+              <span className="font-medium text-[#872524]">{getAccountInfo(session).subscriptionType}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-400">Member Since</span>
-              <span className="font-medium text-slate-200">{mockAccountInfo.memberSince}</span>
+              <span className="font-medium text-slate-200">{getAccountInfo(session).memberSince}</span>
             </div>
           </div>
           <button className="w-full mt-8 bg-[#872524] hover:bg-[#7a2121] p-3 rounded-lg transition-colors text-sm font-semibold">
