@@ -56,7 +56,7 @@ const ideas: Idea[] = [
 ];
 
 const Icon = ({ children }) => (
-  <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-slate-800/80 border border-slate-700 rounded-lg">
+  <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-white border border-white rounded-lg">
     {children}
   </div>
 );
@@ -105,14 +105,14 @@ export default function Home() {
                 <Icon><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#872524]"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg></Icon>
                 <div>
                   <h3 className="font-semibold text-lg text-gray-200">Data-Driven Validation</h3>
-                  <p className="text-base text-gray-400 mt-1">Go beyond hype. We analyze data to find ideas with genuine market demand.</p>
+                  <p className="text-base text-gray-300 mt-1">Go beyond hype. We analyze data to find ideas with genuine market demand.</p>
                 </div>
               </li>
               <li className="flex items-start gap-4">
-                <Icon><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#872524]"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg></Icon>
+                <Icon><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#872524] bg-blue"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg></Icon>
                 <div>
                   <h3 className="font-semibold text-lg text-gray-200">Actionable Blueprints</h3>
-                  <p className="text-base text-gray-400 mt-1">Receive a full breakdown, from MVP to target customers, for every single idea.</p>
+                  <p className="text-base text-gray-300 mt-1">Receive a full breakdown, from MVP to target customers, for every single idea.</p>
                 </div>
               </li>
             </ul>
