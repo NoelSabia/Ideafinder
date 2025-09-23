@@ -29,14 +29,16 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
 
-  # backend-api:
-  #   build: ./backend/api/
-  #   container_name: IDEAFINDER_API
-  #   ports:
-  #     - "8000:8000"
-  #   networks:
-  #     - ideafinder
-  #   restart: unless-stopped
+  backend-api:
+    build: ./backend/api/
+    container_name: IDEAFINDER_API
+    depends_on:
+      - backend-database
+    ports:
+      - "8000:8000"
+    networks:
+      - ideafinder
+    restart: unless-stopped
   
 
 networks:

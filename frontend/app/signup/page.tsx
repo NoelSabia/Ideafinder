@@ -1,27 +1,9 @@
 "use client";
 
-import { useState } from 'react';
-// In a real Next.js project, these would be imported from the respective libraries.
-// For this environment, we provide mock implementations.
-// import { signIn } from "next-auth/react";
-// import { useRouter } from 'next/navigation';
-
-const signIn = async (provider: string, options?: any) => {
-  console.log(`Attempting to sign up with ${provider}`, options);
-  // Simulate an API call
-  await new Promise(res => setTimeout(res, 500));
-  
-  // In a real scenario, the backend would handle user creation.
-  // Here, we'll just simulate a successful sign-up and sign-in.
-  return { ok: true, error: null };
-};
-
-const useRouter = () => ({
-  push: (path: string) => {
-    console.log(`Navigating to ${path}`);
-    alert(`Account created successfully! Redirecting to ${path}...`);
-  }
-});
+import { useState, Suspense } from 'react';
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 // A simple SVG icon component for the Google button
 const GoogleIcon = () => (
@@ -33,36 +15,55 @@ const GoogleIcon = () => (
   </svg>
 );
 
-export default function SignupPage() {
+function SignupForm() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const handleCredentialsSignUp = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setIsLoading(true);
 
-    // In a real app, you would likely call a separate 'signup' API endpoint first.
-    // Then, on success, you would call signIn.
-    // For simplicity, we'll use signIn here to simulate registration and login.
-    const result = await signIn('credentials', {
-      redirect: false,
-      name,
-      email,
-      password,
-    });
+    try {
+      // Step 1: Call your FastAPI backend to create the user
+      const signupResponse = await fetch(`http://localhost:8000/signup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      });
 
-    if (result?.error) {
-      setError('Could not create account. Please try again.');
-    } else if (result?.ok) {
-      router.push('/dashboard');
+      if (!signupResponse.ok) {
+        const errorData = await signupResponse.json();
+        throw new Error(errorData.message || "Failed to create user.");
+      }
+      
+      // Step 2: If signup is successful, sign the user in with NextAuth
+      const signinResult = await signIn("credentials", {
+        redirect: false, // Handle redirect manually
+        email,
+        password,
+      });
+      
+      if (signinResult?.error) {
+        setError("Account created, but failed to log in. Please go to the login page.");
+      } else if (signinResult?.ok) {
+        // Step 3: On successful sign-in, redirect to the account page
+        router.push("/account");
+      }
+
+    } catch (err: any) {
+      setError(err.message || "An unexpected error occurred.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-slate-900 text-white p-4">
+    <div className="min-h-screen w-full flex items-center justify-center text-white p-4">
       <div className="relative w-full max-w-md">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] h-[250px] bg-red-800/50 rounded-full blur-3xl opacity-40"></div>
         
@@ -75,7 +76,7 @@ export default function SignupPage() {
           </div>
 
           <button
-            onClick={() => signIn("google", { callbackUrl: '/dashboard' })}
+            onClick={() => signIn("google", { callbackUrl: '/account' })}
             className="w-full flex items-center justify-center gap-3 bg-slate-700/80 hover:bg-slate-700 border border-slate-600 rounded-lg py-3 font-semibold transition-colors duration-300"
           >
             <GoogleIcon />
@@ -88,7 +89,7 @@ export default function SignupPage() {
             <hr className="flex-grow border-slate-600" />
           </div>
 
-          <form onSubmit={handleCredentialsSignUp} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-slate-300 mb-2">
                 Full Name
@@ -145,20 +146,29 @@ export default function SignupPage() {
             
             <button
               type="submit"
-              className="w-full bg-red-800/90 hover:bg-red-800 text-white font-bold py-3 rounded-lg transition-colors duration-300"
+              disabled={isLoading}
+              className="w-full bg-red-800/90 hover:bg-red-800 text-white font-bold py-3 rounded-lg transition-colors duration-300 disabled:opacity-50"
             >
-              Create Account
+              {isLoading ? "Creating Account..." : "Create Account"}
             </button>
           </form>
 
           <p className="text-center text-sm text-slate-400">
             Already have an account?{' '}
-            <a href="/login" className="font-semibold text-red-500 hover:text-red-400">
+            <Link href="/login" className="font-semibold text-red-500 hover:text-red-400">
               Sign in
-            </a>
+            </Link>
           </p>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-white">Loading...</div>}>
+      <SignupForm />
+    </Suspense>
   );
 }

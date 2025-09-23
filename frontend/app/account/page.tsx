@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { signOut } from 'next-auth/react';
 
 // --- Mock Data ---
 // In a real app, this would come from an API call (e.g., using fetch or SWR)
@@ -37,10 +38,12 @@ export default function AccountPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   
-  // State to track which idea is currently selected
   const [selectedIdea, setSelectedIdea] = useState(mockIdeas[0]);
 
-  // Show loading state while checking authentication
+  const handleSignOut = async () => {
+    signOut({"redirectTo": "/", "redirect": true});
+  }
+
   if (status === "loading") {
     return (
       <main className="min-h-[90vh] w-full text-white p-4 sm:p-8 flex items-center justify-center">
@@ -51,7 +54,6 @@ export default function AccountPage() {
     );
   }
 
-  // Redirect if not authenticated (this shouldn't happen due to middleware, but it's a good fallback)
   if (status === "unauthenticated") {
     router.push('/login?callbackUrl=/account');
     return null;
@@ -134,6 +136,9 @@ export default function AccountPage() {
           </div>
           <button className="w-full mt-8 bg-[#872524] hover:bg-[#7a2121] p-3 rounded-lg transition-colors text-sm font-semibold">
             Manage Subscription
+          </button>
+          <button className="w-full mt-8 bg-[#872524] hover:bg-[#7a2121] p-3 rounded-lg transition-colors text-sm font-semibold" onClick={handleSignOut}>
+            Sign Out
           </button>
         </div>
 

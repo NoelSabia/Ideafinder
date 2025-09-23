@@ -3,7 +3,7 @@
 import { useState, Suspense } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
-
+import Link from 'next/link'; // Import the Link component
 
 // A simple SVG icon component for the Google button
 const GoogleIcon = () => (
@@ -19,27 +19,35 @@ function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false); // Add isLoading state
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/account';
 
   const handleCredentialsSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null); // Clear previous errors
+    setError(null);
+    setIsLoading(true); // Set loading to true
 
-    // Use next-auth signIn function
-    const result = await signIn('credentials', {
-      redirect: false, // Prevent automatic redirect
-      email,
-      password,
-    });
+    try {
+      // Use next-auth signIn function with manual redirect
+      const result = await signIn('credentials', {
+        redirect: false, // IMPORTANT: Set to false to handle redirect manually
+        email,
+        password,
+      });
 
-    if (result?.error) {
-      // If there's an error, display it
-      setError('Invalid email or password. Please try again.');
-    } else if (result?.ok) {
-      // On successful sign-in, redirect to the callback URL
-      router.push(callbackUrl);
+      if (result?.error) {
+        // If there's an error from NextAuth, display it
+        setError('Invalid email or password. Please try again.');
+      } else if (result?.ok) {
+        // On successful sign-in, redirect to the callback URL
+        router.push(callbackUrl);
+      }
+    } catch (err) {
+      setError("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsLoading(false); // Set loading to false
     }
   };
 
@@ -116,18 +124,20 @@ function LoginForm() {
             
             <button
               type="submit"
-              className="w-full bg-red-800/90 hover:bg-red-800 text-white font-bold py-3 rounded-lg transition-colors duration-300"
+              disabled={isLoading} // Disable button when loading
+              className="w-full bg-red-800/90 hover:bg-red-800 text-white font-bold py-3 rounded-lg transition-colors duration-300 disabled:opacity-50"
             >
-              Sign In
+              {isLoading ? "Signing In..." : "Sign In"}
             </button>
           </form>
 
           {/* Footer Link */}
           <p className="text-center text-sm text-slate-400">
             Don't have an account?{' '}
-            <a href="/signup" className="font-semibold text-red-500 hover:text-red-400">
+            {/* Use Link component for better navigation */}
+            <Link href="/signup" className="font-semibold text-red-500 hover:text-red-400">
               Sign up
-            </a>
+            </Link>
           </p>
         </div>
       </div>
