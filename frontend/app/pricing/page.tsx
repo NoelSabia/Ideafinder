@@ -32,9 +32,12 @@ export default function PricingPage() {
             <li className="flex items-center gap-3"><CheckIcon /> 1 Idea Credit</li>
             <li className="flex items-center gap-3"><CheckIcon /> Standard Support</li>
           </ul>
-          <button className="w-full mt-8 bg-[#872524] hover:bg-[#7a2121] p-3 rounded-lg transition-colors font-semibold">
+          <a 
+            href="/checkout?plan=spark"
+            className="block w-full mt-8 bg-[#872524] hover:bg-[#7a2121] p-3 rounded-lg transition-colors font-semibold text-center"
+          >
             Get a Spark
-          </button>
+          </a>
         </div>
 
         {/* --- Tier 2: Innovator (Highlighted) --- */}
@@ -53,9 +56,12 @@ export default function PricingPage() {
             <li className="flex items-center gap-3"><CheckIcon /> E-Book for Ideavalidation</li>
             <li className="flex items-center gap-3"><CheckIcon /> Priority Support</li>
           </ul>
-          <button className="w-full mt-8 bg-[#872524] hover:bg-[#7a2121] p-3 rounded-lg transition-colors font-semibold">
+          <a 
+            href="/checkout?plan=innovator"
+            className="block w-full mt-8 bg-[#872524] hover:bg-[#7a2121] p-3 rounded-lg transition-colors font-semibold text-center"
+          >
             Choose Innovator
-          </button>
+          </a>
         </div>
 
         {/* --- Tier 3: Visionary --- */}
@@ -72,9 +78,12 @@ export default function PricingPage() {
             <li className="flex items-center gap-3"><CheckIcon /> Early Access to New Features</li>
             <li className="flex items-center gap-3"><CheckIcon /> Priority Support</li>
           </ul>
-          <button className="w-full mt-8 bg-[#872524] hover:bg-[#7a2121] p-3 rounded-lg transition-colors font-semibold">
+          <a 
+            href="/checkout?plan=visionary"
+            className="block w-full mt-8 bg-[#872524] hover:bg-[#7a2121] p-3 rounded-lg transition-colors font-semibold text-center"
+          >
             Become a Visionary
-          </button>
+          </a>
         </div>
         </div>
       </div>

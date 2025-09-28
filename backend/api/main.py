@@ -1,15 +1,22 @@
 import logging
 import asyncpg
 import os
+import stripe
+import json
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, status, Request
+from fastapi import FastAPI, status, Request, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 from pydantic import BaseModel, EmailStr
 from passlib.context import CryptContext
+from typing import Optional
 
 load_dotenv()
+
+# Initialize Stripe
+stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
+STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET')
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)-8s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -23,17 +30,22 @@ async def lifespan(app: FastAPI):
     db_name = os.getenv('POSTGRES_DB')
     db_host = os.getenv('POSTGRES_HOST', 'localhost')
     
+    logger.info(f"Environment variables loaded: user={db_user}, db={db_name}, host={db_host}")
+    
     pool = None
     try:
+        logger.info(f"Connecting to database: host={db_host}, user={db_user}, db={db_name}")
         pool = await asyncpg.create_pool(
             user=db_user,
             password=db_password,
             database=db_name,
             host=db_host,
-            port=5432
+            port=5432,
+            min_size=1,
+            max_size=10
         )
         app.state.pool = pool
-        logger.info("Database connection pool created.")
+        logger.info("Database connection pool created successfully")
 
         async with pool.acquire() as connection:
             await connection.execute("""
@@ -43,9 +55,51 @@ async def lifespan(app: FastAPI):
                     email VARCHAR(255) UNIQUE NOT NULL,
                     password VARCHAR(255) NOT NULL,
                     problem_ids INTEGER[],
-                    subscribed VARCHAR(50) DEFAULT 'inactive',
+                    subscription_plan VARCHAR(50) DEFAULT 'inactive',
+                    subscription_status VARCHAR(50) DEFAULT 'inactive',
+                    subscription_start_date TIMESTAMPTZ,
+                    subscription_end_date TIMESTAMPTZ,
+                    stripe_customer_id VARCHAR(255),
+                    credits_remaining INTEGER DEFAULT 0,
                     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
                 )
+            """)
+            
+            # Add new columns to existing users table if they don't exist
+            await connection.execute("""
+                DO $$ 
+                BEGIN 
+                    BEGIN
+                        ALTER TABLE users ADD COLUMN subscription_plan VARCHAR(50) DEFAULT 'inactive';
+                    EXCEPTION
+                        WHEN duplicate_column THEN NULL;
+                    END;
+                    BEGIN
+                        ALTER TABLE users ADD COLUMN subscription_status VARCHAR(50) DEFAULT 'inactive';
+                    EXCEPTION
+                        WHEN duplicate_column THEN NULL;
+                    END;
+                    BEGIN
+                        ALTER TABLE users ADD COLUMN subscription_start_date TIMESTAMPTZ;
+                    EXCEPTION
+                        WHEN duplicate_column THEN NULL;
+                    END;
+                    BEGIN
+                        ALTER TABLE users ADD COLUMN subscription_end_date TIMESTAMPTZ;
+                    EXCEPTION
+                        WHEN duplicate_column THEN NULL;
+                    END;
+                    BEGIN
+                        ALTER TABLE users ADD COLUMN stripe_customer_id VARCHAR(255);
+                    EXCEPTION
+                        WHEN duplicate_column THEN NULL;
+                    END;
+                    BEGIN
+                        ALTER TABLE users ADD COLUMN credits_remaining INTEGER DEFAULT 0;
+                    EXCEPTION
+                        WHEN duplicate_column THEN NULL;
+                    END;
+                END $$;
             """)
         logger.info("Table 'users' initialized.")
         
@@ -53,6 +107,8 @@ async def lifespan(app: FastAPI):
 
     except Exception as e:
         logger.critical(f"Application startup failed: {e}")
+        # Set pool to None so we can handle it gracefully in endpoints
+        app.state.pool = None
         yield
 
     finally:
@@ -65,7 +121,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["http://localhost:3000", "http://localhost:3001"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -82,11 +138,22 @@ class LoginBody(BaseModel):
     email: EmailStr
     password: str
 
+class PaymentIntentBody(BaseModel):
+    amount: int
+    plan_type: Optional[str] = None
+    user_id: Optional[str] = None
+    user_email: Optional[str] = None
+
 
 @app.post("/signup")
 async def signup(request: Request, body: SignupBody) -> JSONResponse:
-    pool = request.app.state.pool
+    if not hasattr(request.app.state, 'pool') or not request.app.state.pool:
+        return JSONResponse(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={"message": "Database connection not available"}
+        )
     
+    pool = request.app.state.pool
     hashed_password = pwd_context.hash(body.password)
 
     async with pool.acquire() as connection:
@@ -119,6 +186,12 @@ async def signup(request: Request, body: SignupBody) -> JSONResponse:
 
 @app.post("/login")
 async def login(request: Request, body: LoginBody) -> JSONResponse:
+    if not hasattr(request.app.state, 'pool') or not request.app.state.pool:
+        return JSONResponse(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={"message": "Database connection not available"}
+        )
+    
     pool = request.app.state.pool
 
     async with pool.acquire() as connection:
@@ -164,3 +237,185 @@ async def health(request: Request) -> JSONResponse:
         status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
         content={"status": "unhealthy", "database": "pool_not_available"}
     )
+
+@app.post("/create-payment-intent")
+async def create_payment_intent(body: PaymentIntentBody):
+    try:
+        # Validate that we have user information
+        if not body.user_id and not body.user_email:
+            raise HTTPException(status_code=400, detail="User authentication required")
+        
+        # Create payment intent
+        intent = stripe.PaymentIntent.create(
+            amount=body.amount,
+            currency='eur',
+            automatic_payment_methods={'enabled': True},
+            metadata={
+                'plan_type': body.plan_type or 'unknown',
+                'user_id': body.user_id or '',
+                'user_email': body.user_email or ''
+            }
+        )
+        
+        return {"client_secret": intent.client_secret}
+    except stripe.error.StripeError as e:
+        logger.error(f"Stripe error: {e}")
+        raise HTTPException(status_code=400, detail="Payment processing error")
+    except Exception as e:
+        logger.error(f"Payment intent creation failed: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@app.post("/webhook/stripe")
+async def stripe_webhook(request: Request):
+    payload = await request.body()
+    sig_header = request.headers.get('stripe-signature')
+    
+    if not STRIPE_WEBHOOK_SECRET:
+        logger.error("Stripe webhook secret not configured")
+        raise HTTPException(status_code=500, detail="Webhook not configured")
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, STRIPE_WEBHOOK_SECRET
+        )
+    except ValueError as e:
+        logger.error(f"Invalid payload: {e}")
+        raise HTTPException(status_code=400, detail="Invalid payload")
+    except stripe.error.SignatureVerificationError as e:
+        logger.error(f"Invalid signature: {e}")
+        raise HTTPException(status_code=400, detail="Invalid signature")
+
+    # Handle the event
+    if event['type'] == 'payment_intent.succeeded':
+        payment_intent = event['data']['object']
+        logger.info(f"Payment succeeded for: {payment_intent['id']}")
+        
+        # Extract user information from metadata
+        user_id = payment_intent.get('metadata', {}).get('user_id')
+        user_email = payment_intent.get('metadata', {}).get('user_email')
+        plan_type = payment_intent.get('metadata', {}).get('plan_type', 'unknown')
+        amount = payment_intent.get('amount', 0)
+        
+        if user_id or user_email:
+            async with request.app.state.pool.acquire() as connection:
+                # Map plan types to credits and subscription details
+                plan_config = {
+                    'Spark': {'credits': 1, 'duration_days': None, 'plan': 'spark'},
+                    'Innovator': {'credits': 4, 'duration_days': 30, 'plan': 'innovator'},
+                    'Visionary': {'credits': 20, 'duration_days': 30, 'plan': 'visionary'}
+                }
+                
+                config = plan_config.get(plan_type, {'credits': 0, 'duration_days': None, 'plan': 'unknown'})
+                
+                # Calculate subscription dates
+                start_date = 'NOW()'
+                end_date = None
+                if config['duration_days']:
+                    end_date = f"NOW() + INTERVAL '{config['duration_days']} days'"
+                
+                # Update user subscription
+                if user_id:
+                    query = """
+                        UPDATE users SET 
+                            subscription_plan = $1,
+                            subscription_status = 'active',
+                            subscription_start_date = NOW(),
+                            subscription_end_date = """ + (end_date if end_date else "NULL") + """,
+                            credits_remaining = credits_remaining + $2
+                        WHERE id = $3
+                    """
+                    await connection.execute(query, config['plan'], config['credits'], int(user_id))
+                elif user_email:
+                    query = """
+                        UPDATE users SET 
+                            subscription_plan = $1,
+                            subscription_status = 'active',
+                            subscription_start_date = NOW(),
+                            subscription_end_date = """ + (end_date if end_date else "NULL") + """,
+                            credits_remaining = credits_remaining + $2
+                        WHERE email = $3
+                    """
+                    await connection.execute(query, config['plan'], config['credits'], user_email)
+                
+                logger.info(f"Updated user subscription: plan={plan_type}, credits={config['credits']}")
+        else:
+            logger.warning(f"Payment succeeded but no user information in metadata: {payment_intent['id']}")
+        
+    elif event['type'] == 'payment_intent.payment_failed':
+        payment_intent = event['data']['object']
+        logger.warning(f"Payment failed for: {payment_intent['id']}")
+    else:
+        logger.info(f"Unhandled event type: {event['type']}")
+
+    return {"status": "success"}
+
+@app.get("/user/subscription/{user_id}")
+async def get_user_subscription(user_id: int, request: Request):
+    try:
+        async with request.app.state.pool.acquire() as connection:
+            user = await connection.fetchrow(
+                """SELECT subscription_plan, subscription_status, subscription_end_date, 
+                   credits_remaining FROM users WHERE id = $1""",
+                user_id
+            )
+            
+            if not user:
+                raise HTTPException(status_code=404, detail="User not found")
+            
+            # Check if subscription is still active
+            is_active = user['subscription_status'] == 'active'
+            if user['subscription_end_date']:
+                from datetime import datetime
+                is_active = is_active and datetime.now() < user['subscription_end_date']
+            
+            return {
+                "plan": user['subscription_plan'],
+                "status": "active" if is_active else "inactive",
+                "end_date": user['subscription_end_date'].isoformat() if user['subscription_end_date'] else None,
+                "credits_remaining": user['credits_remaining'] or 0
+            }
+    except Exception as e:
+        logger.error(f"Error fetching user subscription: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@app.get("/test/db")
+async def test_database_connection(request: Request):
+    """Test endpoint to verify database connectivity"""
+    if not hasattr(request.app.state, 'pool') or not request.app.state.pool:
+        return JSONResponse(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={"status": "error", "message": "Database pool not available"}
+        )
+    
+    try:
+        async with request.app.state.pool.acquire() as connection:
+            result = await connection.fetchval('SELECT version()')
+            return JSONResponse(
+                status_code=status.HTTP_200_OK,
+                content={"status": "success", "database_version": result}
+            )
+    except Exception as e:
+        logger.error(f"Database test failed: {e}")
+        return JSONResponse(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={"status": "error", "message": f"Database connection failed: {str(e)}"}
+        )
+
+@app.get("/test/env")
+async def test_environment():
+    """Test endpoint to verify environment variables"""
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={
+            "status": "success",
+            "environment": {
+                "postgres_user": os.getenv('POSTGRES_USER', 'NOT_SET'),
+                "postgres_db": os.getenv('POSTGRES_DB', 'NOT_SET'),
+                "postgres_host": os.getenv('POSTGRES_HOST', 'NOT_SET'),
+                "stripe_secret_key_set": bool(os.getenv('STRIPE_SECRET_KEY')),
+                "stripe_webhook_secret_set": bool(os.getenv('STRIPE_WEBHOOK_SECRET'))
+            }
+        }
+    )
+
+

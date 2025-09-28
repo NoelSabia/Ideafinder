@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { signOut } from 'next-auth/react';
@@ -39,6 +39,25 @@ export default function AccountPage() {
   const router = useRouter();
   
   const [selectedIdea, setSelectedIdea] = useState(mockIdeas[0]);
+  const [subscriptionInfo, setSubscriptionInfo] = useState<any>(null);
+  const [loadingSubscription, setLoadingSubscription] = useState(true);
+
+  useEffect(() => {
+    // Fetch subscription info when user is logged in
+    if (session?.user?.id) {
+      fetch(`http://localhost:8000/user/subscription/${session.user.id}`)
+        .then(res => res.json())
+        .then(data => {
+          setSubscriptionInfo(data);
+        })
+        .catch(err => {
+          console.error('Failed to fetch subscription info:', err);
+        })
+        .finally(() => {
+          setLoadingSubscription(false);
+        });
+    }
+  }, [session]);
 
   const handleSignOut = async () => {
     signOut({"redirectTo": "/", "redirect": true});
@@ -127,19 +146,58 @@ export default function AccountPage() {
             </div>
             <div className="flex justify-between">
               <span className="text-slate-400">Plan</span>
-              <span className="font-medium text-[#872524]">{getAccountInfo(session).subscriptionType}</span>
+              {loadingSubscription ? (
+                <span className="text-slate-400">Loading...</span>
+              ) : (
+                <span className="font-medium text-[#872524] capitalize">
+                  {subscriptionInfo?.plan === 'inactive' ? 'Free' : subscriptionInfo?.plan || 'Free'}
+                </span>
+              )}
             </div>
+            <div className="flex justify-between">
+              <span className="text-slate-400">Status</span>
+              {loadingSubscription ? (
+                <span className="text-slate-400">Loading...</span>
+              ) : (
+                <span className={`font-medium ${subscriptionInfo?.status === 'active' ? 'text-green-500' : 'text-slate-400'} capitalize`}>
+                  {subscriptionInfo?.status || 'Inactive'}
+                </span>
+              )}
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-400">Credits Remaining</span>
+              {loadingSubscription ? (
+                <span className="text-slate-400">Loading...</span>
+              ) : (
+                <span className="font-medium text-slate-200">
+                  {subscriptionInfo?.credits_remaining || 0}
+                </span>
+              )}
+            </div>
+            {subscriptionInfo?.end_date && (
+              <div className="flex justify-between">
+                <span className="text-slate-400">Expires</span>
+                <span className="font-medium text-slate-200">
+                  {new Date(subscriptionInfo.end_date).toLocaleDateString()}
+                </span>
+              </div>
+            )}
             <div className="flex justify-between">
               <span className="text-slate-400">Member Since</span>
               <span className="font-medium text-slate-200">{getAccountInfo(session).memberSince}</span>
             </div>
           </div>
-          <button className="w-full mt-8 bg-[#872524] hover:bg-[#7a2121] p-3 rounded-lg transition-colors text-sm font-semibold">
-            Manage Subscription
-          </button>
-          <button className="w-full mt-8 bg-[#872524] hover:bg-[#7a2121] p-3 rounded-lg transition-colors text-sm font-semibold" onClick={handleSignOut}>
-            Sign Out
-          </button>
+          <div className="space-y-3 mt-8">
+            <a 
+              href="/pricing" 
+              className="block w-full bg-[#872524] hover:bg-[#7a2121] p-3 rounded-lg transition-colors text-sm font-semibold text-center"
+            >
+              {subscriptionInfo?.status === 'active' ? 'Upgrade Plan' : 'Choose a Plan'}
+            </a>
+            <button className="w-full bg-slate-700 hover:bg-slate-600 p-3 rounded-lg transition-colors text-sm font-semibold" onClick={handleSignOut}>
+              Sign Out
+            </button>
+          </div>
         </div>
 
       </div>
